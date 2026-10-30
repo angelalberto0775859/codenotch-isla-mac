@@ -1,8 +1,9 @@
 # Codenotch — Isla dinámica en Mac (Map Ranking)
 
-La isla de la versión de Windows (`windows/ISLA.md`) portada a la app nativa de Mac en Swift. Todo lo nuevo
-vive en `Sources/Island/`; del original solo se tocan unas líneas (ver «Cambios fuera de Sources/Island»), para
-poder seguir integrando versiones nuevas de upstream sin conflictos. Instalación para usuarios: `LEEME-mac.txt`.
+Una «isla dinámica» estilo iPhone para la app de Mac de [Codenotch](https://github.com/vinzdg/codenotch) (MIT),
+portada de un build propio para Windows (Rust/Tauri, no incluido aquí). Todo lo nuevo vive en `Sources/Island/`;
+del original solo se tocan unas líneas (ver «Cambios fuera de Sources/Island»), para poder seguir integrando
+versiones nuevas de upstream sin conflictos. Instalación para usuarios: `LEEME-mac.txt`.
 
 ## Qué se portó
 
@@ -39,13 +40,13 @@ fundida con el notch físico), el arrastre de la isla y `carry.html`.
   `SUEnableAutomaticChecks: false` (la actualización oficial borraría la isla).
 - `Makefile` (`build-ci`): entitlement `com.apple.security.automation.apple-events` (el hardened runtime bloquea
   AppleScript sin él).
-- `.github/workflows/isla-mac.yml`: compila en `macos-26`, sube el `.dmg` y corre las pruebas.
+- `.github/workflows/isla-mac.yml`: compila en `macos-26`, sube el `.dmg`, corre las pruebas y publica el `.dmg`
+  en Releases (etiqueta `isla-mac`).
 
 ## Compilar
 
-No hace falta una Mac: el workflow **Isla Mac** corre con cada push a `isla-mac` que toque la app (o a mano desde
-Actions). En un repo privado los runners de macOS cuentan 10x minutos: una corrida completa (dmg + pruebas) son
-~13–15 min reales ≈ 130–150 de la cuota.
+No hace falta una Mac: el workflow **Isla Mac** corre con cada push a `main` que toque la app (o a mano desde
+Actions) y deja el `.dmg` en [Releases](../../releases/latest).
 
 En una Mac con Xcode 26: `brew install xcodegen create-dmg`, luego `make dmg-ci` (app sin firmar en
 `build/ci/`) y `make test-ci`. Pruebas de la isla: `Tests/IslandTests.swift`.
@@ -54,7 +55,7 @@ En una Mac con Xcode 26: `brew install xcodegen create-dmg`, luego `make dmg-ci`
 
 ```bash
 git fetch upstream --tags
-git switch isla-mac
+git switch main
 git merge vX.Y.Z
 ```
 

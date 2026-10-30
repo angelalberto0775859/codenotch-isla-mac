@@ -12,8 +12,8 @@ Sirve en Mac con Apple Silicon y con Intel.
 1. INSTALAR
 -----------
 
-1. Descarga el archivo .zip (el «artifact» de GitHub) y descomprímelo.
-   Adentro está Codenotch-Isla-…-mac.dmg y este LEEME.
+1. Descarga Codenotch-Isla-…-mac.dmg de la página de descargas:
+   https://github.com/angelalberto0775859/codenotch-isla-mac/releases/latest
 
 2. Abre el .dmg y arrastra Codenotch a la carpeta Aplicaciones.
    Si ya tenías el Codenotch oficial, se reemplaza (tus cuentas y ajustes se

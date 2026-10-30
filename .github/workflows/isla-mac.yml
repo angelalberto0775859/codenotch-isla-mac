@@ -1,17 +1,16 @@
 name: Isla Mac
 
-# Map Ranking — la app de Mac con la isla dinámica (Sources/Island): la compila
-# sin firmar (firma ad-hoc, como el `make dmg-ci` del original), deja el .dmg
-# como artifact y después corre las pruebas de Mac.
+# La app de Mac con la isla dinámica (Sources/Island): la compila sin firmar
+# (firma ad-hoc, como el `make dmg-ci` del original), deja el .dmg como
+# artifact, corre las pruebas de Mac y, si pasan, publica el .dmg en la
+# versión «isla-mac» de Releases, que se descarga sin cuenta de GitHub.
 #
-# Solo en la rama `isla-mac` de este repo privado, y solo cuando cambia algo que
-# entra en la app: en un repo privado los runners de macOS gastan los minutos
-# gratis de Actions 10 veces más rápido que los de Linux. El .dmg se sube antes
-# de las pruebas para que una prueba roja no se lleve también la descarga (la
-# corrida igual queda en rojo).
+# Solo cuando cambia algo que entra en la app. El .dmg se sube como artifact
+# antes de las pruebas para tenerlo aunque una prueba falle; a Releases solo
+# llega lo que pasó las pruebas.
 on:
   push:
-    branches: [isla-mac]
+    branches: [main]
     paths:
       - 'Sources/**'
       - 'Tests/**'
@@ -30,12 +29,15 @@ concurrency:
 
 jobs:
   build:
-    if: github.repository == 'angelalberto0775859/codenotch-isla'
+    if: github.repository == 'angelalberto0775859/codenotch-isla-mac'
     name: Isla para Mac (.dmg + pruebas)
+    # Solo el paso de Releases escribe algo.
+    permissions:
+      contents: write
     # La misma imagen que usa el original: un Xcode anterior no abre el proyecto
     # (objectVersion 77) ni conoce Liquid Glass.
     runs-on: macos-26
-    # Tope por si algo se cuelga: cada minuto aquí cuenta por diez.
+    # Tope por si algo se cuelga.
     timeout-minutes: 45
     env:
       HOMEBREW_NO_AUTO_UPDATE: '1'
@@ -76,13 +78,45 @@ jobs:
       - name: Pruebas de Mac
         run: make test-ci
 
+      # Una sola versión que se va actualizando (etiqueta `isla-mac`): el enlace
+      # .../releases/latest siempre lleva al último .dmg que pasó las pruebas.
+      - name: Publicar la descarga
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.dmg.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG=isla-mac
+          DMG=$(ls build/isla/*.dmg)
+          cat > notes.md <<EOF
+          Codenotch ${VERSION} con isla dinámica para Mac (build no oficial de [vinzdg/codenotch](https://github.com/vinzdg/codenotch), MIT), compilado de \`${GITHUB_SHA:0:7}\`.
+
+          **Instalar:** abre el .dmg y arrastra Codenotch a Aplicaciones. No está notarizado, así que quita la cuarentena una vez desde Terminal:
+
+              xattr -dr com.apple.quarantine /Applications/Codenotch.app
+
+          Si macOS dice que la app está *dañada*, es la cuarentena: corre el comando de arriba. Permisos, uso y límites en LEEME-mac.txt (adjunto).
+
+          Requiere macOS 15 o más nuevo.
+          EOF
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/${TAG}" -f sha="${GITHUB_SHA}" -F force=true >/dev/null
+            gh release view "$TAG" --json assets -q '.assets[].name' | while read -r asset; do gh release delete-asset "$TAG" "$asset" --yes; done
+            gh release edit "$TAG" --title "Codenotch ${VERSION} · isla dinámica para Mac" --notes-file notes.md --latest >/dev/null
+            gh release upload "$TAG" "$DMG" build/isla/LEEME-mac.txt
+          else
+            gh release create "$TAG" "$DMG" build/isla/LEEME-mac.txt --target "${GITHUB_SHA}" --title "Codenotch ${VERSION} · isla dinámica para Mac" --notes-file notes.md --latest
+          fi
+          rm -f notes.md
+
       - name: Cómo instalarla
         if: always()
         run: |
           {
             echo "### Codenotch con isla dinámica ${{ steps.dmg.outputs.version }} — build sin firmar"
             echo
-            echo "Descarga el artifact de abajo, descomprímelo y abre el \`.dmg\`. Arrastra Codenotch a Aplicaciones."
+            echo "Descarga el \`.dmg\` de [Releases](https://github.com/${GITHUB_REPOSITORY}/releases/latest) (o el artifact de abajo) y arrastra Codenotch a Aplicaciones."
             echo
             echo "Como no está notarizada, macOS la pone en cuarentena. Quítala una vez:"
             echo

@@ -1,3 +1,10 @@
+> **Codenotch con isla dinámica (build no oficial).** Este repo es una copia de
+> [vinzdg/codenotch](https://github.com/vinzdg/codenotch) (MIT, © su autor) con una
+> «isla dinámica» estilo iPhone para Mac: música de Spotify y Música con letras,
+> CPU/RAM/disco, batería Bluetooth y capturas, encima de la barra de menús.
+> **Descarga:** [última versión](../../releases/latest) · **Instalar:** [`LEEME-mac.txt`](LEEME-mac.txt) ·
+> **Detalles:** [`ISLA-MAC.md`](ISLA-MAC.md). El resto de este README es el del original.
+
 <div align="center">
 
 ![Codenotch](docs/design/codenotch-banner.png)

@@ -26,7 +26,8 @@ extension View {
 /// crossing-and-notification machinery it switches is Notifications' to
 /// explain.
 private enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
-    case accounts, phone, deepseek, ollama, lmstudio, omlx, customEndpoints, remoteHosts, appearance, notifications, costs, general
+    // `island`: Map Ranking — la isla dinámica (Sources/Island).
+    case accounts, phone, deepseek, ollama, lmstudio, omlx, customEndpoints, remoteHosts, appearance, island, notifications, costs, general
 
     /// The sections the sidebar lists; Phone only once pairing is offered.
     static var visible: [SettingsSection] {
@@ -56,6 +57,7 @@ private enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .customEndpoints: return L10n.t("Custom Endpoints")
         case .remoteHosts:    return L10n.t("Remote Hosts")
         case .appearance:    return L10n.t("Appearance")
+        case .island:        return "Isla dinámica"
         case .notifications: return L10n.t("Notifications")
         case .costs:         return L10n.t("Costs")
         case .general:       return L10n.t("General")
@@ -86,6 +88,7 @@ private enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .customEndpoints: return L10n.t("OpenAI-compatible APIs, local runtimes and custom proxies.")
         case .remoteHosts:    return L10n.t("Claude and Codex accounts on servers you reach over SSH.")
         case .appearance:    return L10n.t("How the notch looks and where it sits.")
+        case .island:        return "Música, letras, sistema y Bluetooth en una isla estilo iPhone."
         case .notifications: return L10n.t("What Codenotch tells you, and when.")
         case .costs:         return L10n.t("What each project spent of each login's allowance.")
         case .general:       return L10n.t("Startup, updates and everything else.")
@@ -103,6 +106,7 @@ private enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .customEndpoints: return "network"
         case .remoteHosts:    return "server.rack"
         case .appearance:    return "paintbrush.fill"
+        case .island:        return "capsule.fill"
         case .notifications: return "bell.badge.fill"
         case .costs:         return "banknote.fill"
         case .general:       return "gearshape.fill"
@@ -123,6 +127,7 @@ private enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .customEndpoints: return .indigo
         case .remoteHosts:    return .orange
         case .appearance:    return .indigo
+        case .island:        return .pink
         case .notifications: return .red
         case .costs:         return .mint
         case .general:       return .gray
@@ -754,6 +759,7 @@ struct SettingsView: View {
         case .remoteHosts:
             RemoteHostsSettingsView(preferences: preferences)
         case .appearance:    appearancePane
+        case .island:        IslandSettingsPane(settings: IslandSettings.shared)
         case .notifications: notificationsPane
         case .general:       generalPane
         }

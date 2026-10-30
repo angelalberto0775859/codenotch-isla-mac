@@ -50,12 +50,16 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Codenotch lee la canción que suena en Spotify o Música, y sus controles, para mostrarla en la isla dinámica.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Codenotch muestra la batería de tus dispositivos Bluetooth conectados en la isla dinámica.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Codenotch answers your phone on this network so it can show your usage.</string>
 	<key>SUAutomaticallyUpdate</key>
 	<false/>
 	<key>SUEnableAutomaticChecks</key>
-	<true/>
+	<false/>
 	<key>SUFeedURL</key>
 	<string>https://hivinz.com/appcast.xml</string>
 	<key>SUPublicEDKey</key>

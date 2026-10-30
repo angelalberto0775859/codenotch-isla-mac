@@ -1,0 +1,115 @@
+CODENOTCH CON ISLA DINÁMICA — PARA MAC
+=====================================
+
+Es Codenotch (github.com/vinzdg/codenotch, licencia MIT, © su autor) con la
+«isla dinámica» estilo iPhone de la versión de Windows de Map Ranking, ahora
+en la app nativa de Mac.
+
+Requisitos: macOS 15 o más nuevo (con macOS 26 el vidrio es Liquid Glass).
+Sirve en Mac con Apple Silicon y con Intel.
+
+
+1. INSTALAR
+-----------
+
+1. Descarga el archivo .zip (el «artifact» de GitHub) y descomprímelo.
+   Adentro está Codenotch-Isla-…-mac.dmg y este LEEME.
+
+2. Abre el .dmg y arrastra Codenotch a la carpeta Aplicaciones.
+   Si ya tenías el Codenotch oficial, se reemplaza (tus cuentas y ajustes se
+   quedan).
+
+3. Esta copia NO está firmada ni notarizada por Apple (se compiló en GitHub,
+   sin cuenta de desarrollador), así que macOS la pone en cuarentena.
+   Abre Terminal (Aplicaciones › Utilidades › Terminal), pega esto y pulsa
+   Enter:
+
+       xattr -dr com.apple.quarantine /Applications/Codenotch.app
+
+   Solo hace falta una vez por cada copia nueva que instales.
+
+   Si macOS dice «Codenotch está dañada y no se puede abrir», no está dañada:
+   es la cuarentena. Corre el comando de arriba y vuelve a abrirla.
+
+4. Abre Codenotch desde Aplicaciones.
+
+
+2. LOS PERMISOS QUE VA A PEDIR
+------------------------------
+
+macOS pregunta cada uno la primera vez que hace falta. Si dijiste que no, se
+cambia en Ajustes del Sistema › Privacidad y seguridad:
+
+- Bluetooth: para la batería de tus dispositivos conectados.
+  (Privacidad y seguridad › Bluetooth)
+- Automatización › Spotify / Música: para leer la canción y usar los
+  controles. Sale la primera vez que suena algo con la isla abierta.
+- Grabación de pantalla (o «Grabación de pantalla y audio del sistema»): solo
+  para los botones de captura «pantalla completa» y «recorte». Sin él, la
+  captura sale solo con el fondo de pantalla. El botón «grabar» no lo necesita.
+- Llavero: el propio Codenotch pide leer el inicio de sesión de Claude Code.
+  Como esta copia no está firmada, macOS puede volver a preguntarlo después de
+  instalar una copia nueva. Es normal: pulsa «Permitir siempre».
+
+
+3. CÓMO SE USA
+--------------
+
+- La isla vive arriba al centro de la pantalla. En una Mac con notch se funde
+  con él: plegada es negra, del alto del notch, con un ala a cada lado (la
+  portada y las ondas de la canción, o el anillo de Claude y su porcentaje).
+  En una Mac sin notch es una cápsula sobre la barra de menús.
+- Pasa el mouse por encima y se abre: a la izquierda (30 %) la música con
+  portada, barra de avance y controles; a la derecha (70 %) los anillos de IA,
+  CPU, RAM, disco y la batería de cada dispositivo Bluetooth.
+- Botón de letra (la burbuja con comillas, junto a los controles): cambia la
+  portada por la letra de la canción, línea por línea.
+- Arriba a la izquierda: captura de pantalla completa (sin la isla, se guarda
+  donde macOS guarda tus capturas y se copia al portapapeles), recorte, y
+  grabar (abre la barra de ⇧⌘5). Arriba a la derecha: el engranaje abre la
+  Configuración.
+- Tocar un anillo de IA lo actualiza; tocar uno del sistema lo vuelve a leer.
+- Al conectar un dispositivo Bluetooth, la isla se ensancha un momento con su
+  nombre y batería.
+
+Configuración › Isla dinámica: encender o apagar la isla y cada parte
+(música, letras, anillos de IA, sistema, Bluetooth, avisos, capturas), vidrio
+o color liso, color propio y ocultarla en pantalla completa. Lo que se apaga
+deja de leerse.
+
+Con la isla encendida, el notch clásico de Codenotch del borde de arriba se
+oculta (los dos ocuparían el mismo lugar). Si pones el notch clásico en otro
+borde (Configuración › Apariencia), conviven.
+
+
+4. LO QUE NO HACE (Y POR QUÉ)
+-----------------------------
+
+- Música solo de Spotify y de la app Música. Desde macOS 15.4 Apple no deja a
+  las apps de terceros leer «lo que está sonando» del sistema, así que lo que
+  suena en Safari, Chrome, YouTube u otros reproductores no se ve. Spotify y
+  Música sí responden por AppleScript.
+- La batería solo aparece en dispositivos que la publican: audífonos de Apple
+  (AirPods, Beats) y teclados, ratones y trackpads (los de Apple y muchos
+  otros). Los demás salen conectados, sin porcentaje.
+- No hay ventiladores: eso era de las laptops HP OMEN con Windows.
+- La isla está solo en el borde de arriba (en Windows puede ir en los cuatro).
+- Las letras salen de LRCLIB (lrclib.net): es lo único que se manda a
+  internet (título, artista, álbum y duración, una vez por canción). Se apaga
+  en Configuración › Isla dinámica › Letras de canciones.
+
+
+5. NO LA ACTUALICES DESDE CODENOTCH
+-----------------------------------
+
+Las actualizaciones automáticas vienen apagadas en esta copia. La
+actualización que ofrece Codenotch es la versión oficial, sin la isla:
+aceptarla la borraría. Para una isla nueva, instala el .dmg nuevo encima.
+
+
+6. DESINSTALAR
+--------------
+
+Cierra Codenotch (menú de la app › Salir) y arrastra
+/Applications/Codenotch.app a la Papelera. Los ajustes quedan en
+~/Library/Preferences/com.vinz.codenotch.plist por si la vuelves a instalar.

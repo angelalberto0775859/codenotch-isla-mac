@@ -4,6 +4,8 @@ import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var notchFleet: NotchFleet?
+    /// Map Ranking — la isla dinámica (Sources/Island).
+    private var island: IslandController?
     private var store: UsageStore?
     var phoneLinkServer: PhoneLinkServer?
     var phoneLinkServerStatus: PhoneLinkServerStatus?
@@ -635,9 +637,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 .sink { [weak statusItem] in statusItem?.activityStyle = $0 }
                 .store(in: &cancellables)
 
+            // Map Ranking: con la isla dinámica encendida, el notch clásico del
+            // borde de arriba se oculta (los dos ocuparían el mismo lugar).
             preferences.$notchVisibility
+                .combineLatest(preferences.$notchEdge, IslandSettings.shared.$enabled)
                 .receive(on: RunLoop.main)
-                .sink { [weak fleet] in fleet?.apply($0) }
+                .sink { [weak fleet] visibility, edge, island in
+                    let replaced = IslandController.replacesNotch(enabled: island, edge: edge)
+                    fleet?.apply(replaced ? .hidden : visibility)
+                }
                 .store(in: &cancellables)
 
             preferences.$foldsForFullScreen
@@ -1240,6 +1248,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         fleet.apply(deepSeekPricingEnabled: preferences.deepSeekPricingEnabled)
         fleet.apply(deepSeekPricingSchedule: preferences.deepSeekPricingSchedule)
         fleet.show()
+
+        // Map Ranking — la isla dinámica, al final como el notch: lee los
+        // mismos anillos (`menuModel`) y comparte sus acciones.
+        let island = IslandController(settings: IslandSettings.shared, usage: fleet.menuModel)
+        island.onOpenSettings = { [weak self] in self?.settings?.show() }
+        island.onRefreshProvider = fleet.onRefreshProvider
+        island.onLook = fleet.onLook
+        island.start()
+        self.island = island
     }
 
     /// Open the notch, and make a noise, when something has just finished.

@@ -99,6 +99,11 @@ targets:
             "100.64.0.0/10":
               NSExceptionAllowsInsecureHTTPLoads: true
         NSLocalNetworkUsageDescription: "Codenotch answers your phone on this network so it can show your usage."
+        # Map Ranking — la isla dinámica: lo que suena se le pregunta a Spotify y
+        # a Música por AppleScript, y la batería sale del Bluetooth. Sin estas
+        # frases macOS niega los dos permisos sin preguntar.
+        NSAppleEventsUsageDescription: "Codenotch lee la canción que suena en Spotify o Música, y sus controles, para mostrarla en la isla dinámica."
+        NSBluetoothAlwaysUsageDescription: "Codenotch muestra la batería de tus dispositivos Bluetooth conectados en la isla dinámica."
         # --- Sparkle -------------------------------------------------------
         # Beside the download itself, on hivinz.com. It used to point at a
         # GitHub Pages URL for a repo that was never created, so every check
@@ -116,7 +121,9 @@ targets:
         # Set explicitly so Sparkle never asks on first launch. Left unset, it
         # shows a "check for updates automatically?" prompt, which is exactly
         # the permission this is meant to avoid.
-        SUEnableAutomaticChecks: true
+        # Map Ranking: apagado en este build. La actualización de Codenotch es
+        # la versión oficial, sin la isla; aceptarla la borraría.
+        SUEnableAutomaticChecks: false
         # Never downloads unasked: a new version is offered in the notch and
         # installed when Update is chosen — see `Updater`.
         SUAutomaticallyUpdate: false

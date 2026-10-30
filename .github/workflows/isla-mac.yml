@@ -1,0 +1,96 @@
+name: Isla Mac
+
+# Map Ranking — la app de Mac con la isla dinámica (Sources/Island): la compila
+# sin firmar (firma ad-hoc, como el `make dmg-ci` del original), deja el .dmg
+# como artifact y después corre las pruebas de Mac.
+#
+# Solo en la rama `isla-mac` de este repo privado, y solo cuando cambia algo que
+# entra en la app: en un repo privado los runners de macOS gastan los minutos
+# gratis de Actions 10 veces más rápido que los de Linux. El .dmg se sube antes
+# de las pruebas para que una prueba roja no se lleve también la descarga (la
+# corrida igual queda en rojo).
+on:
+  push:
+    branches: [isla-mac]
+    paths:
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'project.yml'
+      - 'Package.resolved'
+      - 'Makefile'
+      - 'LEEME-mac.txt'
+      - '.github/workflows/isla-mac.yml'
+  workflow_dispatch:
+
+# Un push nuevo cancela la corrida anterior de la misma rama: no tiene caso
+# pagar minutos por compilar un commit que ya quedó viejo.
+concurrency:
+  group: isla-mac-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.repository == 'angelalberto0775859/codenotch-isla'
+    name: Isla para Mac (.dmg + pruebas)
+    # La misma imagen que usa el original: un Xcode anterior no abre el proyecto
+    # (objectVersion 77) ni conoce Liquid Glass.
+    runs-on: macos-26
+    # Tope por si algo se cuelga: cada minuto aquí cuenta por diez.
+    timeout-minutes: 45
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Herramientas
+        run: |
+          xcodebuild -version
+          xcrun --show-sdk-version
+
+      - name: Instalar XcodeGen y create-dmg
+        run: brew install xcodegen create-dmg
+
+      - name: Compilar la app y el .dmg
+        run: make dmg-ci
+
+      - name: Nombrar el .dmg
+        id: dmg
+        run: |
+          set -euo pipefail
+          VERSION=$(awk -F'"' '/MARKETING_VERSION:/ {print $2}' project.yml)
+          # Para el LEEME: qué Mac la puede abrir (arm64 = Apple Silicon, x86_64 = Intel).
+          lipo -info build/ci/DerivedData/Build/Products/Release/Codenotch.app/Contents/MacOS/Codenotch || true
+          mkdir -p build/isla
+          cp build/ci/*.dmg "build/isla/Codenotch-Isla-${VERSION}-mac.dmg"
+          cp LEEME-mac.txt build/isla/
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Codenotch-Isla-${{ steps.dmg.outputs.version }}-mac-${{ github.sha }}
+          path: build/isla/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Pruebas de Mac
+        run: make test-ci
+
+      - name: Cómo instalarla
+        if: always()
+        run: |
+          {
+            echo "### Codenotch con isla dinámica ${{ steps.dmg.outputs.version }} — build sin firmar"
+            echo
+            echo "Descarga el artifact de abajo, descomprímelo y abre el \`.dmg\`. Arrastra Codenotch a Aplicaciones."
+            echo
+            echo "Como no está notarizada, macOS la pone en cuarentena. Quítala una vez:"
+            echo
+            echo '```'
+            echo "xattr -dr com.apple.quarantine /Applications/Codenotch.app"
+            echo '```'
+            echo
+            echo "Si macOS dice que la app está *dañada*, es la cuarentena, no una descarga mala: corre el comando de arriba."
+            echo
+            echo "Todo el detalle (permisos, desinstalar, qué hace y qué no) está en \`LEEME-mac.txt\`, dentro del mismo artifact."
+          } >> "$GITHUB_STEP_SUMMARY"

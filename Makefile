@@ -319,11 +319,16 @@ build-ci: gen
 	@# this is the single difference that has to be relaxed to make up for not
 	@# holding that identity. The hardened runtime otherwise stays on, so a
 	@# preview behaves like the release it previews.
+	@#
+	@# Map Ranking: plus Apple Events, which the hardened runtime blocks
+	@# without this entitlement. The dynamic island asks Spotify and Music
+	@# what is playing over AppleScript (Sources/Island/NowPlaying.swift).
 	printf '%s\n' \
 		'<?xml version="1.0" encoding="UTF-8"?>' \
 		'<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
 		'<plist version="1.0"><dict>' \
 		'<key>com.apple.security.cs.disable-library-validation</key><true/>' \
+		'<key>com.apple.security.automation.apple-events</key><true/>' \
 		'</dict></plist>' > $(CI_ENTITLEMENTS)
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) -destination '$(DEST)' \
 		-configuration Release -derivedDataPath $(CI_DERIVED) \

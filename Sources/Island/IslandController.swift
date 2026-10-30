@@ -182,9 +182,12 @@ final class IslandController {
     private var cursorTimer: Timer?
     private var fullScreenTimer: Timer?
     private var collapseWork: DispatchWorkItem?
+    private var openWork: DispatchWorkItem?
 
-    /// Hover in es inmediato; al salir espera un poco, por si el puntero solo
-    /// se resbaló del borde.
+    /// Para abrirse, el puntero tiene que quedarse un instante sobre la isla:
+    /// pasar por encima camino a otra cosa (cerrar una ventana, un menú) no la
+    /// abre. Al salir espera un poco, por si el puntero solo se resbaló.
+    static let openDelay: TimeInterval = 0.18
     static let foldGrace: TimeInterval = 0.35
     static let motion = Animation.spring(response: 0.42, dampingFraction: 0.82)
 
@@ -232,6 +235,8 @@ final class IslandController {
             fullScreenTimer = nil
             collapseWork?.cancel()
             collapseWork = nil
+            openWork?.cancel()
+            openWork = nil
             model.expanded = false
             model.player.enabled = false
             model.lyrics.enabled = false
@@ -361,8 +366,9 @@ final class IslandController {
         guard let panel else { return false }
         let mouse = NSEvent.mouseLocation
         let local = CGPoint(x: mouse.x - panel.frame.minX, y: panel.frame.maxY - mouse.y)
-        // Abierta, un margen: el puntero no tiene que quedar exacto en el borde.
-        let slop: CGFloat = model.expanded ? 8 : 2
+        // Plegada cuenta solo la isla, sin margen, para no atrapar clics de lo
+        // que hay alrededor; abierta, un margen chico para no cerrarla de más.
+        let slop: CGFloat = model.expanded ? 4 : 0
         var rect = islandRect.insetBy(dx: -slop, dy: -slop)
         // Pegada al borde de arriba, la fila 0 de la pantalla también cuenta.
         rect.origin.y = min(rect.origin.y, 0)
@@ -372,12 +378,31 @@ final class IslandController {
     private func cursorMoved() {
         guard let panel, !running.isEmpty, !model.hiddenForCapture else { return }
         let inside = pointerInside()
-        if panel.ignoresMouseEvents == inside { panel.ignoresMouseEvents = !inside }
+        // Plegada, los clics atraviesan la isla: solo abierta los recibe.
+        let interactive = inside && model.expanded
+        if panel.ignoresMouseEvents == interactive { panel.ignoresMouseEvents = !interactive }
         if inside {
             collapseWork?.cancel()
             collapseWork = nil
-            if !model.expanded { setExpanded(true) }
-        } else if model.expanded, collapseWork == nil {
+            // Con un botón apretado (arrastrando una ventana, por ejemplo) no se abre.
+            if !model.expanded, openWork == nil, NSEvent.pressedMouseButtons == 0 {
+                let work = DispatchWorkItem { [weak self] in
+                    MainActor.assumeIsolated {
+                        guard let self else { return }
+                        self.openWork = nil
+                        if self.pointerInside(), NSEvent.pressedMouseButtons == 0 {
+                            self.setExpanded(true)
+                        }
+                    }
+                }
+                openWork = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + Self.openDelay, execute: work)
+            }
+        } else {
+            openWork?.cancel()
+            openWork = nil
+        }
+        if !inside, model.expanded, collapseWork == nil {
             let work = DispatchWorkItem { [weak self] in
                 MainActor.assumeIsolated {
                     guard let self else { return }
@@ -400,6 +425,8 @@ final class IslandController {
             onLook?()
         }
         hosting?.interactiveRect = islandRect
+        // Abierta recibe los clics al instante; plegada los deja pasar.
+        if let panel { panel.ignoresMouseEvents = !(open && pointerInside()) }
     }
 
     private func updateSystemPolling() {

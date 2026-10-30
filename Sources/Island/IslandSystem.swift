@@ -74,9 +74,9 @@ enum IslandSystem {
         }
         guard result == KERN_SUCCESS else { return nil }
         let page = UInt64(getpagesize())
-        let internal = UInt64(stats.internal_page_count)
-        let purgeable = min(UInt64(stats.purgeable_count), internal)
-        let pages = internal - purgeable + UInt64(stats.wire_count) + UInt64(stats.compressor_page_count)
+        let appPages = UInt64(stats.internal_page_count)
+        let purgeable = min(UInt64(stats.purgeable_count), appPages)
+        let pages = appPages - purgeable + UInt64(stats.wire_count) + UInt64(stats.compressor_page_count)
         let total = ProcessInfo.processInfo.physicalMemory
         return (min(pages * page, total), total)
     }
